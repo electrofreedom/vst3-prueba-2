@@ -89,7 +89,6 @@ ReverseVocalEditor::Combo& ReverseVocalEditor::addCombo (const char* id, const S
 ReverseVocalEditor::ReverseVocalEditor (ReverseVocalProcessor& p) : AudioProcessorEditor (&p), proc (p)
 {
     setLookAndFeel (&laf);
-    setSize (1000, 660);
 
     // fila 1: reverb / tono        fila 2: reverse         fila 3: disparo / salida
     // (el orden de creación define la colocación en resized())
@@ -126,6 +125,7 @@ ReverseVocalEditor::ReverseVocalEditor (ReverseVocalProcessor& p) : AudioProcess
     presetBox.setSelectedId (proc.getCurrentProgram() + 1, dontSendNotification);
     presetBox.onChange = [this] { proc.setCurrentProgram (presetBox.getSelectedId() - 1); };
 
+    setSize (1000, 660);      // al final: resized() necesita que todos los controles ya existan
     startTimerHz (30);
 }
 
@@ -133,6 +133,7 @@ ReverseVocalEditor::~ReverseVocalEditor() { stopTimer(); setLookAndFeel (nullptr
 
 void ReverseVocalEditor::resized()
 {
+    if (knobs.size() < 19 || combos.size() < 4 || modeCombo == nullptr || quantCombo == nullptr) return;   // aun en construccion
     auto area = getLocalBounds().reduced (20);
     area.removeFromTop (58);                                   // cabecera
     stateArea = area.removeFromTop (28).withSizeKeepingCentre (520, 28);
@@ -196,7 +197,7 @@ void ReverseVocalEditor::paint (Graphics& g)
     g.setColour (kText); g.setFont (FontOptions (22.0f, Font::bold));
     g.drawText ("REVERSE VOCAL REVERB", 28, 20, 420, 28, Justification::centredLeft);
     g.setColour (kDim); g.setFont (FontOptions (11.0f));
-    g.drawText ("auto-capture  ·  reverse tail  ·  arrives on the voice", 28, 46, 420, 16, Justification::centredLeft);
+    g.drawText ("auto-capture  |  reverse tail  |  arrives on the voice", 28, 46, 420, 16, Justification::centredLeft);
 
     // indicador de estado
     const int st = (int) proc.getCore().state();
